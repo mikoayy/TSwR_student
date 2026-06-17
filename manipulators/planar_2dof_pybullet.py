@@ -1,4 +1,5 @@
 import random
+import numpy as np
 import pybullet
 import pybullet_data
 from pybullet_utils.bullet_client import BulletClient
@@ -19,8 +20,10 @@ class PlanarManipulator2DOFPyBullet:
             self.client.changeDynamics(0, i, lateralFriction=0., linearDamping=0., angularDamping=0.)
         for j in range(self.client.getNumJoints(0)):
             self.client.setJointMotorControl2(0, j, pybullet.POSITION_CONTROL, force=0)
+        q0 = np.asarray(q0).flatten()
+        qdot0 = np.asarray(qdot0).flatten()
         for i in range(2):
-            self.client.resetJointState(0, i + 1, q0[i], qdot0[i])
+            self.client.resetJointState(0, i + 1, float(q0[i]), float(qdot0[i]))
         self.multimodel = multimodel
         if self.multimodel:
             self.objects_params = [(0.1, 0.05), (0.01, 0.01), (1., 0.3)]
@@ -33,8 +36,9 @@ class PlanarManipulator2DOFPyBullet:
         return x
 
     def set_control(self, u):
+        u = np.asarray(u).flatten()
         for i in range(2):
-            self.client.setJointMotorControl2(0, i + 1, pybullet.TORQUE_CONTROL, **dict(force=u[i]))
+            self.client.setJointMotorControl2(0, i + 1, pybullet.TORQUE_CONTROL, **dict(force=float(u[i])))
 
     def simulation_step(self):
         if self.multimodel:
